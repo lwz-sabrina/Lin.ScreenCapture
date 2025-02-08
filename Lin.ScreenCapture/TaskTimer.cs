@@ -5,7 +5,6 @@ namespace Lin.ScreenCapture
     internal class TaskTimer
     {
         private readonly Action _action;
-
         private CancellationTokenSource? _tokenSource;
         private Action<Exception>? ErrorHandler;
         public int _timer { get; set; }
@@ -24,18 +23,23 @@ namespace Lin.ScreenCapture
                 return;
             _running = true;
             _tokenSource = new CancellationTokenSource();
+            var token = _tokenSource.Token;
             try
             {
                 Task.Run(() =>
                 {
-                    while (!_tokenSource.IsCancellationRequested)
+                    while (!token.IsCancellationRequested)
                     {
-                        Task.Delay(_timer, _tokenSource.Token)
+                        Task.Delay(_timer, token)
                             .ContinueWith(t =>
                             {
                                 if (t.IsCompleted)
                                 {
-                                    _action.Invoke();
+                                    Task.Run(_action.Invoke, token);
+                                }
+                                if (t.Exception is not null)
+                                {
+                                    ErrorHandler?.Invoke(t.Exception);
                                 }
                             });
                     }

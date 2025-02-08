@@ -25,27 +25,18 @@ namespace Lin.ScreenCapture
             bitmap.Dispose();
         }
 
-        private void GcAction()
-        {
-            GC.Collect();
-        }
-
         private TaskTimer start = null!;
-        private TaskTimer gc = null!;
 
         public void Start(int fps)
         {
             var time = 1000 / fps;
             start = new TaskTimer(CoreAction, time, OnError);
-            gc = new TaskTimer(GcAction, 1000, OnError);
             start.Start();
-            gc.Start();
         }
 
         public void Stop()
         {
             start.Stop();
-            gc.Stop();
         }
     }
 }

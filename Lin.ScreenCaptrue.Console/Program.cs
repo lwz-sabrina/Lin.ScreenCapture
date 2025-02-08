@@ -81,27 +81,35 @@ internal class Program
         //videoWriter.Release();
         //Console.WriteLine($"视频已保存为 {outputFilePath}");
 
-        DesktopVideo desktopVideo = new DesktopVideo();
         int frameRate = 30;
-        int index = 0;
-        int time = 0;
-        Stopwatch stopwatch = new Stopwatch();
-        stopwatch.Start();
+        string outputFilePath = "screencapture.mp4";
+        var fourcc = VideoWriter.FourCC('M', 'P', 'G', '4');
+        using var videoWriter = new VideoWriter(
+            outputFilePath,
+            fourcc,
+            frameRate,
+            new OpenCvSharp.Size(1920, 1080)
+        );
+        DesktopVideo desktopVideo = new DesktopVideo();
         desktopVideo.OnFarme += bitmap =>
         {
-            index++;
-            if (index == frameRate)
-            {
-                index = 0;
-                time++;
-                stopwatch.Stop();
-                Console.WriteLine($"耗时 {stopwatch.ElapsedMilliseconds}");
-                stopwatch.Restart();
-            }
+            var info = bitmap.Info;
+            using var tempBitmap = new Bitmap(
+                info.Width,
+                info.Height,
+                info.RowBytes,
+                PixelFormat.Format32bppPArgb,
+                bitmap.GetPixels()
+            );
+            var mat = tempBitmap.ToMat();
+            videoWriter.Write(mat);
         };
         desktopVideo.Start(frameRate);
+        Console.WriteLine("按下回车键停止录制...");
         Console.ReadLine();
         desktopVideo.Stop();
         desktopVideo.Dispose();
+        videoWriter.Release();
+        Console.WriteLine($"视频已保存为 {outputFilePath}");
     }
 }
