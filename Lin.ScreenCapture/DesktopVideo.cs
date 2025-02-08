@@ -1,21 +1,26 @@
-﻿using SkiaSharp;
+﻿using System;
+using SkiaSharp;
 
 namespace Lin.ScreenCapture
 {
     public class DesktopVideo : IDisposable
     {
         private readonly Desktop _Desktop = new Desktop();
+        private readonly AdvancedTaskScheduler _Scheduler = new AdvancedTaskScheduler();
+
         public Action<SKBitmap>? OnFarme;
+        public int Width => _Desktop.Width;
+        public int Height => _Desktop.Height;
 
         public void Dispose()
         {
-            Stop();
             _Desktop.Dispose();
+            _Scheduler.Dispose();
         }
 
-        private void OnError(Exception exception)
+        private void GcAction()
         {
-            throw exception;
+            GC.Collect();
         }
 
         private void CoreAction()
@@ -25,18 +30,26 @@ namespace Lin.ScreenCapture
             bitmap.Dispose();
         }
 
-        private TaskTimer start = null!;
+        private Guid? Core_Guid;
+        private Guid? GC_Guid;
 
         public void Start(int fps)
         {
-            var time = 1000 / fps;
-            start = new TaskTimer(CoreAction, time, OnError);
-            start.Start();
+            var time = TimeSpan.FromMilliseconds(1000 / fps);
+            Core_Guid = _Scheduler.ScheduleTask(CoreAction, System.DateTime.Now, time);
+            GC_Guid = _Scheduler.ScheduleTask(
+                GcAction,
+                System.DateTime.Now,
+                TimeSpan.FromMilliseconds(5000)
+            );
         }
 
         public void Stop()
         {
-            start.Stop();
+            if (Core_Guid.HasValue)
+                _Scheduler.RemoveTask(Core_Guid.Value);
+            if (GC_Guid.HasValue)
+                _Scheduler.RemoveTask(GC_Guid.Value);
         }
     }
 }
