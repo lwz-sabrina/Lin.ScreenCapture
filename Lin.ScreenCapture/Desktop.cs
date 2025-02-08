@@ -6,9 +6,13 @@ namespace Lin.ScreenCapture
 {
     public partial class Desktop : IDisposable
     {
-        public int Width { get; private set; }
-        public int Height { get; private set; }
+        public const double DefultScale = 1;
+        private int width;
+        private int height;
+        public int Width => (int)(width * Scale);
+        public int Height => (int)(height * Scale);
         public Size Size => new Size(Width, Height);
+        public double Scale { get; private set; } = DefultScale;
 
         public Desktop()
         {
@@ -43,18 +47,34 @@ namespace Lin.ScreenCapture
 
         public SKBitmap GetSKBitmap()
         {
+            SKBitmap bitmap;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return GetSKBitmap_Windwos();
+                bitmap = GetSKBitmap_Windwos();
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return GetSKBitmap_Linux();
+                bitmap = GetSKBitmap_Linux();
             }
             else
             {
                 throw new PlatformNotSupportedException("不支持的操作系统");
             }
+            if (Scale == DefultScale)
+            {
+                return bitmap;
+            }
+            else
+            {
+                var resizedBitmap = bitmap.Resize(
+                    new SKSizeI(Width, Height),
+                    SKSamplingOptions.Default
+                );
+                bitmap.Dispose(); // 释放原始的SKBitmap
+                return resizedBitmap;
+            }
         }
+
+        public void ScaleSize(double scale) => Scale = scale;
     }
 }

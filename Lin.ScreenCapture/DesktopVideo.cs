@@ -1,20 +1,21 @@
-﻿using System;
+﻿using System.Drawing;
 using SkiaSharp;
 
 namespace Lin.ScreenCapture
 {
     public class DesktopVideo : IDisposable
     {
-        private readonly Desktop _Desktop = new Desktop();
-        private readonly AdvancedTaskScheduler _Scheduler = new AdvancedTaskScheduler();
-
         public Action<SKBitmap>? OnFarme;
-        public int Width => _Desktop.Width;
-        public int Height => _Desktop.Height;
+        private readonly Desktop Desktop = new Desktop();
+        private readonly AdvancedTaskScheduler _Scheduler = new AdvancedTaskScheduler();
+        public int Width => Desktop.Width;
+        public int Height => Desktop.Height;
+        public Size Size => Desktop.Size;
+        public double Scale => Desktop.Scale;
 
         public void Dispose()
         {
-            _Desktop.Dispose();
+            Desktop.Dispose();
             _Scheduler.Dispose();
         }
 
@@ -25,7 +26,7 @@ namespace Lin.ScreenCapture
 
         private void CoreAction()
         {
-            var bitmap = _Desktop.GetSKBitmap();
+            var bitmap = Desktop.GetSKBitmap();
             OnFarme?.Invoke(bitmap);
             bitmap.Dispose();
         }
@@ -40,7 +41,7 @@ namespace Lin.ScreenCapture
             GC_Guid = _Scheduler.ScheduleTask(
                 GcAction,
                 System.DateTime.Now,
-                TimeSpan.FromMilliseconds(5000)
+                TimeSpan.FromMilliseconds(1000)
             );
         }
 
@@ -51,5 +52,7 @@ namespace Lin.ScreenCapture
             if (GC_Guid.HasValue)
                 _Scheduler.RemoveTask(GC_Guid.Value);
         }
+
+        public void ScaleSize(double scale) => Desktop.ScaleSize(scale);
     }
 }

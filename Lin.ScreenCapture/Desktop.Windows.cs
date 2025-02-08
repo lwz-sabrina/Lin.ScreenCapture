@@ -11,52 +11,52 @@ namespace Lin.ScreenCapture
     {
         private void Init_Windwos()
         {
+            int width = 0;
+            int height = 0;
             using ManagementObjectSearcher searcher = new ManagementObjectSearcher(
                 "select * from Win32_VideoController"
             );
-            int width = 0;
-            int height = 0;
             // 执行查询并处理结果
             foreach (ManagementObject videoController in searcher.Get())
             {
-                foreach (var item in videoController.Properties)
+                var availability = videoController.Properties["Availability"].Value;
+                if (availability.ToString() == "3") // 3 表示可用
                 {
-                    var availability = videoController.Properties["Availability"].Value;
-                    if (availability.ToString() == "3") // 3 表示可用
-                    {
-                        // 获取分辨率信息
-                        var horizontalResolution = videoController
-                            .Properties["CurrentHorizontalResolution"]
-                            .Value.ToString();
-                        var verticalResolution = videoController
-                            .Properties["CurrentVerticalResolution"]
-                            .Value.ToString();
+                    // 获取分辨率信息
+                    var horizontalResolution = videoController
+                        .Properties["CurrentHorizontalResolution"]
+                        .Value.ToString();
+                    var verticalResolution = videoController
+                        .Properties["CurrentVerticalResolution"]
+                        .Value.ToString();
 
-                        int.TryParse(horizontalResolution, out width);
-                        int.TryParse(verticalResolution, out height);
-                        break;
-                    }
+                    int.TryParse(horizontalResolution, out width);
+                    int.TryParse(verticalResolution, out height);
+                    break;
                 }
-                videoController.Dispose();
             }
-            this.Width = width;
-            this.Height = height;
+            this.width = width;
+            this.height = height;
         }
 
         private SKBitmap GetSKBitmap_Windwos()
         {
-            var info = new SKImageInfo(Width, Height);
+            var info = new SKImageInfo(width, height);
             var skiaBitmap = new SKBitmap(info);
-            using var pixmap = skiaBitmap.PeekPixels();
-            var tempBitmap = new Bitmap(
-                info.Width,
-                info.Height,
-                info.RowBytes,
-                PixelFormat.Format32bppPArgb,
-                pixmap.GetPixels()
-            );
-            using var g = System.Drawing.Graphics.FromImage(tempBitmap);
-            g.CopyFromScreen(0, 0, 0, 0, new System.Drawing.Size(Width, Height));
+            using (var pixmap = skiaBitmap.PeekPixels())
+            using (
+                var tempBitmap = new Bitmap(
+                    info.Width,
+                    info.Height,
+                    info.RowBytes,
+                    PixelFormat.Format32bppPArgb,
+                    pixmap.GetPixels()
+                )
+            )
+            using (var g = System.Drawing.Graphics.FromImage(tempBitmap))
+            {
+                g.CopyFromScreen(0, 0, 0, 0, new System.Drawing.Size(width, height));
+            }
             return skiaBitmap;
         }
     }

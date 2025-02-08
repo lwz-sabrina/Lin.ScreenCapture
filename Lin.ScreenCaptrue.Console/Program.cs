@@ -7,6 +7,7 @@ using OpenCvSharp.Extensions;
 using SkiaSharp;
 using X11;
 
+#pragma warning disable CA1416 // Validate platform compatibility
 //Desktop desktop = new Desktop();
 //Console.WriteLine($"Width:{desktop.Width}");
 //Console.WriteLine($"Height:{desktop.Height}");
@@ -40,16 +41,17 @@ internal class Program
         //tempBitmap.Save("screenshot.png");
         //Console.WriteLine("截图已保存为 screenshot.png");
 
-        DesktopVideo desktopVideo = new DesktopVideo();
-        int frameRate = 60;
+        int frameRate = 30;
         string outputFilePath = "screencapture.mp4";
         // 初始化视频写入器
         var fourcc = VideoWriter.FourCC('M', 'P', 'G', '4');
+        DesktopVideo desktopVideo = new DesktopVideo();
+        desktopVideo.ScaleSize(0.5);
         using var videoWriter = new VideoWriter(
             outputFilePath,
             fourcc,
             frameRate,
-            new OpenCvSharp.Size(1920, 1080)
+            new OpenCvSharp.Size(desktopVideo.Width, desktopVideo.Height)
         );
         desktopVideo.OnFarme += bitmap =>
         {
@@ -70,6 +72,7 @@ internal class Program
         desktopVideo.Stop();
         desktopVideo.Dispose();
         videoWriter.Release();
+        videoWriter.Dispose();
         Console.WriteLine($"视频已保存为 {outputFilePath}");
 
         //DesktopVideo desktopVideo = new DesktopVideo();
