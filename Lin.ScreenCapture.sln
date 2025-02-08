@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lin.ScreenCapture", "Lin.ScreenCapture\Lin.ScreenCapture.csproj", "{0D5DDAF3-0CED-4DF9-92E0-805E9125B874}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lin.ScreenCaptrue.Console", "Lin.ScreenCaptrue.Console\Lin.ScreenCaptrue.Console.csproj", "{9B79391E-7213-4FC0-A4BF-B8FC7598F0C6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0D5DDAF3-0CED-4DF9-92E0-805E9125B874}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D5DDAF3-0CED-4DF9-92E0-805E9125B874}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D5DDAF3-0CED-4DF9-92E0-805E9125B874}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D5DDAF3-0CED-4DF9-92E0-805E9125B874}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B79391E-7213-4FC0-A4BF-B8FC7598F0C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B79391E-7213-4FC0-A4BF-B8FC7598F0C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B79391E-7213-4FC0-A4BF-B8FC7598F0C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B79391E-7213-4FC0-A4BF-B8FC7598F0C6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
