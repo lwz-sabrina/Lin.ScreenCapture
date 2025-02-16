@@ -1,7 +1,9 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.Management;
+using System.Runtime.InteropServices;
 using SkiaSharp;
+using X11;
 
 #pragma warning disable CA1416
 
@@ -55,7 +57,12 @@ namespace Lin.ScreenCapture
             )
             using (var g = System.Drawing.Graphics.FromImage(tempBitmap))
             {
-                g.CopyFromScreen(0, 0, 0, 0, new System.Drawing.Size(width, height));
+                g.CopyFromScreen(
+                    System.Drawing.Point.Empty,
+                    System.Drawing.Point.Empty,
+                    new System.Drawing.Size(Width, Height),
+                    CopyPixelOperation.SourceCopy
+                );
             }
             return skiaBitmap;
         }

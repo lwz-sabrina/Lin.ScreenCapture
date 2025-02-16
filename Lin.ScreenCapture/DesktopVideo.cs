@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
+using System.Threading;
 using SkiaSharp;
 
 namespace Lin.ScreenCapture
@@ -7,16 +9,19 @@ namespace Lin.ScreenCapture
     {
         public Action<SKBitmap>? OnFarme;
         private readonly Desktop Desktop = new Desktop();
-        private readonly AdvancedTaskScheduler _Scheduler = new AdvancedTaskScheduler();
+        private readonly CancellationTokenSource cancellationTokenSource =
+            new CancellationTokenSource();
         public int Width => Desktop.Width;
         public int Height => Desktop.Height;
         public Size Size => Desktop.Size;
         public double Scale => Desktop.Scale;
 
+        public void ScaleSize(double scale) => Desktop.ScaleSize(scale);
+
         public void Dispose()
         {
+            cancellationTokenSource.Dispose();
             Desktop.Dispose();
-            _Scheduler.Dispose();
         }
 
         private void GcAction()
@@ -24,35 +29,45 @@ namespace Lin.ScreenCapture
             GC.Collect();
         }
 
-        private void CoreAction()
-        {
-            var bitmap = Desktop.GetSKBitmap();
-            OnFarme?.Invoke(bitmap);
-            bitmap.Dispose();
-        }
-
-        private Guid? Core_Guid;
-        private Guid? GC_Guid;
-
         public void Start(int fps)
         {
-            var time = TimeSpan.FromMilliseconds(1000 / fps);
-            Core_Guid = _Scheduler.ScheduleTask(CoreAction, System.DateTime.Now, time);
-            GC_Guid = _Scheduler.ScheduleTask(
-                GcAction,
-                System.DateTime.Now,
-                TimeSpan.FromMilliseconds(1000)
-            );
+            if (cancellationTokenSource.IsCancellationRequested)
+            {
+                cancellationTokenSource.TryReset();
+            }
+            foreach (var bitmap in GetBitmaps(fps, cancellationTokenSource.Token))
+            {
+                OnFarme?.Invoke(bitmap);
+            }
         }
 
         public void Stop()
         {
-            if (Core_Guid.HasValue)
-                _Scheduler.RemoveTask(Core_Guid.Value);
-            if (GC_Guid.HasValue)
-                _Scheduler.RemoveTask(GC_Guid.Value);
+            cancellationTokenSource.Cancel();
         }
 
-        public void ScaleSize(double scale) => Desktop.ScaleSize(scale);
+        public IEnumerable<SKBitmap> GetBitmaps(
+            int fps,
+            CancellationToken cancellationToken = default
+        )
+        {
+            int index = 0;
+            var time = TimeSpan.FromMilliseconds(1000 / fps);
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var bitmap = Desktop.GetSKBitmap();
+                yield return bitmap;
+                index++;
+                if (index == fps)
+                {
+                    GcAction();
+                    index = 0;
+                }
+                bitmap.Dispose();
+                Thread.Sleep(time);
+            }
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
     }
 }
