@@ -7,10 +7,8 @@ namespace Lin.ScreenCapture
     public partial class Desktop : IDisposable
     {
         public const double DefultScale = 1;
-        private int width;
-        private int height;
-        public int Width => (int)(width * Scale);
-        public int Height => (int)(height * Scale);
+        public int Width { get; private set; }
+        public int Height { get; private set; }
         public Size Size => new Size(Width, Height);
         public double Scale { get; private set; } = DefultScale;
 
@@ -66,8 +64,10 @@ namespace Lin.ScreenCapture
             }
             else
             {
+                int ScaleWith = (int)(Width * Scale);
+                int ScaleHeight = (int)(Height * Scale);
                 var resizedBitmap = bitmap.Resize(
-                    new SKSizeI(Width, Height),
+                    new SKSizeI(ScaleWith, ScaleHeight),
                     SKSamplingOptions.Default
                 );
                 bitmap.Dispose(); // 释放原始的SKBitmap

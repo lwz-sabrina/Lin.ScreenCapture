@@ -19,8 +19,8 @@ namespace Lin.ScreenCapture
             int screen = Xlib.XDefaultScreen(Display);
             RootWindow = Xlib.XRootWindow(Display, screen);
             Xlib.XGetWindowAttributes(Display, RootWindow, out XWindowAttributes windowAttributes);
-            this.width = (int)windowAttributes.width;
-            this.height = (int)windowAttributes.height;
+            this.Width = (int)windowAttributes.width;
+            this.Height = (int)windowAttributes.height;
         }
 
         private SKBitmap GetSKBitmap_Linux()
@@ -30,14 +30,14 @@ namespace Lin.ScreenCapture
                 RootWindow,
                 0,
                 0,
-                (uint)width,
-                (uint)height,
+                (uint)Width,
+                (uint)Height,
                 0,
                 PixmapFormat.ZPixmap
             );
-            SKBitmap bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            SKBitmap bitmap = new SKBitmap(Width, Height, SKColorType.Bgra8888, SKAlphaType.Premul);
             IntPtr pixels = bitmap.GetPixels();
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < Height; y++)
             {
                 for (int x = 0; x < Width; x++)
                 {

@@ -1,9 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.Management;
-using System.Runtime.InteropServices;
 using SkiaSharp;
-using X11;
 
 #pragma warning disable CA1416
 
@@ -37,13 +35,13 @@ namespace Lin.ScreenCapture
                     break;
                 }
             }
-            this.width = width;
-            this.height = height;
+            this.Width = width;
+            this.Height = height;
         }
 
         private SKBitmap GetSKBitmap_Windwos()
         {
-            var info = new SKImageInfo(width, height);
+            var info = new SKImageInfo(Width, Height);
             var skiaBitmap = new SKBitmap(info);
             using (var pixmap = skiaBitmap.PeekPixels())
             using (
