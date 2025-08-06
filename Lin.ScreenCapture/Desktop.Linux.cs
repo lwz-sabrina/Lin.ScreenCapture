@@ -6,27 +6,61 @@ namespace Lin.ScreenCapture
 {
     partial class Desktop
     {
-        private IntPtr Display { get; set; }
-        private Window RootWindow { get; set; }
+        private class SafeDisplay : SafeHandle
+        {
+            private SafeDisplay(nint invalidHandleValue, bool ownsHandle)
+                : base(invalidHandleValue, ownsHandle) { }
+
+            public SafeDisplay()
+                : this(default, true)
+            {
+                handle = Xlib.XOpenDisplay(null);
+            }
+
+            public static readonly SafeDisplay Null = new(default, false) { handle = IntPtr.Zero };
+            public override bool IsInvalid => handle == IntPtr.Zero;
+
+            protected override bool ReleaseHandle()
+            {
+                try
+                {
+                    Xlib.XCloseDisplay(handle);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
+        private SafeDisplay Display = SafeDisplay.Null;
+        private Window RootWindow;
 
         private void Init_Linux()
         {
-            Display = Xlib.XOpenDisplay(null);
-            if (Display == IntPtr.Zero)
+            Display = new SafeDisplay();
+            if (Display.IsInvalid)
             {
                 throw new X11Exception("无法打开显示器");
             }
-            int screen = Xlib.XDefaultScreen(Display);
-            RootWindow = Xlib.XRootWindow(Display, screen);
-            Xlib.XGetWindowAttributes(Display, RootWindow, out XWindowAttributes windowAttributes);
-            this.Width = (int)windowAttributes.width;
-            this.Height = (int)windowAttributes.height;
+            int screen = Xlib.XDefaultScreen(Display.DangerousGetHandle());
+            RootWindow = Xlib.XRootWindow(Display.DangerousGetHandle(), screen);
+            XWindowAttributes windowAttributes;
+            Xlib.XGetWindowAttributes(
+                Display.DangerousGetHandle(),
+                RootWindow,
+                out windowAttributes
+            );
+            Width = (int)windowAttributes.width;
+            Height = (int)windowAttributes.height;
         }
 
         private SKBitmap GetSKBitmap_Linux()
         {
+            // 获取屏幕图像
             XImage image = Xlib.XGetImage(
-                Display,
+                Display.DangerousGetHandle(),
                 RootWindow,
                 0,
                 0,
@@ -50,11 +84,13 @@ namespace Lin.ScreenCapture
 
         private void Dispose_Linux()
         {
-            if (Display != IntPtr.Zero)
-            {
-                Xlib.XCloseDisplay(Display);
-                Display = IntPtr.Zero;
-            }
+            Display.Dispose();
+        }
+
+        private class X11Exception : Exception
+        {
+            public X11Exception(string? message)
+                : base(message) { }
         }
     }
 }
